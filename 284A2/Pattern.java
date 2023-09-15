@@ -11,29 +11,50 @@ public class Pattern {
     String text = br.readLine();
     int occurences = 0;
     int patternLength = pattern.length();
-    int countTimes = text.length() - patternLength + 1;
+    int countTimes = text.length() - patternLength;
     // YOUR CODE GOES HERE.
+    int h = 1;
+    int patternHash = calcHash(pattern, patternLength);
+    int textHash = calcHash(text, patternLength);
+    for (int i = 0; i < patternLength - 1; i++) {
+      h = (h * 256) % 769;
+      if (h < 0) {
+        h += 769;
+      }
+    }
     for (int i = 0; i < countTimes; i++) {
-      if (text.substring(i, i + patternLength).equals(pattern)) {
+      if (textHash == patternHash) {
+        if (text.substring(i, i + patternLength).equals(pattern)) {
+          occurences++;
+        }
+      }
+      textHash =
+          recalcHash(h, patternLength, textHash, text.charAt(i), text.charAt(i + patternLength));
+    }
+    if (textHash == patternHash) {
+      if (text.substring(countTimes, countTimes + patternLength).equals(pattern)) {
         occurences++;
       }
     }
-
     System.out.println(occurences);
   }
 
   public static int calcHash(String text, int patternLength) {
     int hash = 0;
     for (int i = 0; i < patternLength; i++) {
-      hash = 31 * hash + text.charAt(i);
+      hash = (256 * hash + text.charAt(i)) % 769;
     }
+    if (hash < 0) {
+        hash += 769;
+      }
     return hash;
   }
 
-  public static int recalcHash(String text, int patternLength, int oldHash, int oldChar, int newChar) {
-    int hash = oldHash - oldChar;
-    hash = hash / 31;
-    hash = hash + newChar * (int) Math.pow(31, patternLength - 1);
+  public static int recalcHash(int h, int patternLength, int oldHash, char oldChar, char newChar) {
+    int hash = (256 * (oldHash - oldChar * h) + newChar) % 769;
+    if (hash < 0) {
+      hash += 769;
+    }
     return hash;
   }
 }
